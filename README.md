@@ -1,19 +1,31 @@
-# SOLID Principle Projects
+# SOLID / Clean Architecture Projects
 
-SOLID原則をGoで実践的に学ぶための2つのサンプルプロジェクトです。
+SOLID原則と Clean Architecture を Go で実践的に学ぶためのサンプルプロジェクト集。
 
 参考: [SOLID原則の実践的ケーススタディ](https://shuji-bonji.github.io/Notes-on-SOLID-Principle/practical-case-studies.html)
 
 ---
 
+## ディレクトリ構成
+
+```
+solid/
+├── ec-site/        # SOLID原則の基礎演習（単一ドメイン）
+├── pastebin/       # SOLID原則の応用演習（レイヤードアーキテクチャ）
+└── clean/
+    └── pastebin/   # Clean Architecture の実装練習
+```
+
+---
+
 ## プロジェクト概要
 
-| | ec-site | pastebin |
-|---|---|---|
-| 目的 | SOLID原則の基礎を一通り体験する | より実践的なアーキテクチャでSOLIDを適用する |
-| 複雑さ | シンプル（単一ドメイン） | 中規模（レイヤードアーキテクチャ） |
-| 主な学習テーマ | SRP / DIP / LSP / ISP の基本 | OCP（レジストリパターン）/ DIP（Goのinterface慣習） |
-| バグ修正あり | あり（意図的なバグを修正する演習） | なし（LSP違反を意図的に残している） |
+| | ec-site | pastebin | clean/pastebin |
+|---|---|---|---|
+| 目的 | SOLID原則の基礎を一通り体験する | より実践的なアーキテクチャでSOLIDを適用する | Clean Architecture の層構造と依存の向きを体得する |
+| 複雑さ | シンプル（単一ドメイン） | 中規模（レイヤードアーキテクチャ） | 中規模（4層構成） |
+| 主な学習テーマ | SRP / DIP / LSP / ISP の基本 | OCP（レジストリパターン）/ DIP（Goのinterface慣習） | 層の責任分離・interface の置き場所・Mock テスト |
+| バグ修正あり | あり（意図的なバグを修正する演習） | なし（LSP違反を意図的に残している） | なし |
 
 ---
 
@@ -131,7 +143,50 @@ func init() {
 
 ---
 
-## 2プロジェクトの学習上の使い分け
+---
+
+## clean/pastebin
+
+Pastebin サービスを題材にした Clean Architecture の実装練習。  
+詳細は [`clean/pastebin/README.md`](clean/pastebin/README.md) を参照。
+
+### ファイル構成
+
+```
+clean/pastebin/
+├── domain/         # 業務ルール・struct・Repository interface
+├── service/        # ビジネス手順（use case）
+├── repository/     # DB の具体的な実装（メモリ）
+└── controller/     # HTTP の橋渡し・Service interface
+```
+
+### 層の依存関係
+
+```
+controller ──▶ domain （Service interface 経由）
+service    ──▶ domain （Repository interface 経由）
+repository ──▶ domain （Repository interface を実装）
+
+domain は誰も import しない
+```
+
+### 学習ポイント
+
+#### ✅ 依存の向き
+- 内側（domain）は外側を知らない
+- 外側が内側の interface に依存することで差し替え可能になる
+
+#### ✅ interface の置き場所
+- `PasteRepository` → domain（domain が「自分に必要なもの」を宣言）
+- `PasteService` → controller（controller が「使いたいもの」を宣言）
+
+#### ✅ Mock によるテスト分離
+- service テストでは `domain.PasteRepository` を Mock に差し替えて DB 不要でテストできる
+- controller テストでは `PasteService` interface を Mock に差し替えて service 不要でテストできる
+
+---
+
+## 学習の使い分け
 
 | 学びたいこと | 参照先 |
 |---|---|
@@ -141,3 +196,6 @@ func init() {
 | GoのDIP慣習（interfaceは使う側が定義） | pastebin / `user/service.go` |
 | LSP違反の具体例（事後条件） | pastebin / `paste/service.go` の `ShortLinkGeneratorFactory` |
 | レイヤードアーキテクチャとSOLIDの関係 | pastebin 全体 |
+| Clean Architecture の層構造と依存の向き | clean/pastebin 全体 |
+| interface の置き場所の判断基準 | clean/pastebin / `domain/paste.go` + `controller/paste.go` |
+| Mock を使った単体テストの書き方 | clean/pastebin / `README.md` のテストセクション |
