@@ -1,4 +1,4 @@
-# SOLID原則 学習プロジェクト
+# SOLID Principle Projects
 
 SOLID原則をGoで実践的に学ぶための2つのサンプルプロジェクトです。
 
