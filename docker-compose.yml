@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres16-for-solid
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: solid
+      TZ: Asia/Tokyo
+
+    ports:
+      - "5437:5437"
+
+      # use postgres16 volume mount with the path "/var/lib/postgresql/data" in container
+    volumes:
+      - postgres16:/var/lib/postgresql/data
+      # - ./data:/var/lib/postgresql/data # mount with loacal path in mac/windows
+
+# create volume named postgres16(don't need if using bind mount)
+volumes:
+  postgres16:
